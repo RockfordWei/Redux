@@ -6,7 +6,7 @@ public protocol Action { }
 
 open class Redux<S: State> {
     public typealias Reducer = (_ action: Action, _ state: S) async throws -> S
-    public typealias Completion = (Error?) -> Void
+    public typealias Completion = (State?, Error?) -> Void
     private var state: S
     private let reducer: Reducer
     private let subject = PassthroughSubject<S, Never>()
@@ -23,16 +23,16 @@ open class Redux<S: State> {
     public func trigger(action: Action, on queue: DispatchQueue = .main, completion: Completion? = nil) {
         Task {
             do {
-                _ = try await dispatch(action: action)
+                let state = try await dispatch(action: action)
                 if let callback = completion {
                     queue.async {
-                        callback(nil)
+                        callback(state, nil)
                     }
                 }
             } catch {
                 if let callback = completion {
                     queue.async {
-                        callback(error)
+                        callback(nil, error)
                     }
                 }
             }

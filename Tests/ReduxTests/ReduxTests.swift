@@ -52,11 +52,13 @@ final class ReduxTests: XCTestCase {
         let obj = MyObj()
         let assignment = reduxer.assign(to: \.value, on: obj)
         let exp = expectation(description: "trigger")
-        reduxer.trigger(action: true) { error in
+        reduxer.trigger(action: true) { state, error in
             XCTAssertNil(error)
+            XCTAssertEqual(state as? Int, 1)
             XCTAssertEqual(obj.value, 1)
-            reduxer.trigger(action: false) { error in
+            reduxer.trigger(action: false) { state, error in
                 XCTAssertNil(error)
+                XCTAssertEqual(state as? Int, 0)
                 XCTAssertEqual(obj.value, 0)
                 exp.fulfill()
             }
